@@ -1,0 +1,193 @@
+// Vertex shader
+#if defined(WEBGL2) || defines(WEBGPU)
+precision highp sampler2DArray;
+#endif
+precision highp float;
+
+attribute vec3 position;
+attribute vec2 uv;
+
+
+uniform mat4 u_World;
+uniform mat4 u_ViewProjection;
+uniform float u_UseRampColor;
+uniform float u_ColorRampMin;
+uniform float u_ColorRampStrength;
+uniform vec3 u_ColorRamp;
+uniform vec3 u_ColorBase;
+uniform float u_UseArcMask;
+uniform float u_ArcMaskRange;
+uniform float u_UseStripes;
+uniform float u_StripeCountint;
+uniform float u_StripeWidth;
+uniform float u_StripeFeather;
+uniform float u_UseRingRamp;
+uniform float u_Reverse;
+uniform float u_RingThickness;
+uniform float u_RingRadius;
+uniform float u_RingFeather;
+uniform float u_UseRampAlpha;
+uniform float u_AlphaRampMin;
+uniform float u_AlphaRampStrength;
+uniform float u_AlphaGlobal;
+
+
+varying vec2 v_uv;
+
+
+
+
+float u_TRUE = 1.0;
+float u_TWO = 2.0;
+float u_PI = 3.14159265;
+float u_HALF = 0.5;
+float u_StartRangeFeather = 0.0012;
+float u_ZERO = 0.0;
+float u_ArcRangeFeather = 0.0012;
+float u_ONE = 1.0;
+float u_FIFTY = 50.0;
+
+
+void main(void) {
+vec4 output1 = u_World * vec4(position, 1.0);
+vec4 output0 = u_ViewProjection * output1;
+gl_Position = output0;
+v_uv = uv;
+
+}
+
+// Fragment shader
+#if defined(PREPASS)
+#extension GL_EXT_draw_buffers : require
+layout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];
+highp vec4 gl_FragColor;
+#endif
+#if defined(WEBGL2) || defines(WEBGPU)
+precision highp sampler2DArray;
+#endif
+precision highp float;
+
+uniform mat4 u_World;
+uniform mat4 u_ViewProjection;
+uniform float u_UseRampColor;
+uniform float u_ColorRampMin;
+uniform float u_ColorRampStrength;
+uniform vec3 u_ColorRamp;
+uniform vec3 u_ColorBase;
+uniform float u_UseArcMask;
+uniform float u_ArcMaskRange;
+uniform float u_UseStripes;
+uniform float u_StripeCountint;
+uniform float u_StripeWidth;
+uniform float u_StripeFeather;
+uniform float u_UseRingRamp;
+uniform float u_Reverse;
+uniform float u_RingThickness;
+uniform float u_RingRadius;
+uniform float u_RingFeather;
+uniform float u_UseRampAlpha;
+uniform float u_AlphaRampMin;
+uniform float u_AlphaRampStrength;
+uniform float u_AlphaGlobal;
+
+
+varying vec2 v_uv;
+
+
+#include<helperFunctions>
+
+
+
+float u_TRUE = 1.0;
+float u_TWO = 2.0;
+float u_PI = 3.14159265;
+float u_HALF = 0.5;
+float u_StartRangeFeather = 0.0012;
+float u_ZERO = 0.0;
+float u_ArcRangeFeather = 0.0012;
+float u_ONE = 1.0;
+float u_FIFTY = 50.0;
+
+
+void main(void) {
+float x = v_uv.x;
+float y = v_uv.y;
+float output8 = 1. - y;
+float output7 = 0.0 + (output8 - u_ColorRampMin) * (1.0 - 0.0) / (1.0 - u_ColorRampMin);
+float output6 = output7 * u_ColorRampStrength;
+float output5 = clamp(output6, 0.0, 1.0);
+vec3 xyz2 = vec3(output5, output5, output5).xyz;
+vec3 output4 = xyz2 * u_ColorRamp;
+float output21 = x * u_TWO;
+float output20 = 1. - output21;
+float output23 = y * u_TWO;
+float output22 = 1. - output23;
+float output19 = atan(output20, output22);
+float output18 = output19 / u_PI;
+float output17 = output18 * u_HALF;
+float output16 = output17 + u_HALF;
+float output15 = smoothstep(u_StartRangeFeather, u_ZERO, output16);
+float output25 = u_ArcMaskRange + u_ArcRangeFeather;
+float output24 = smoothstep(u_ArcMaskRange, output25, output16);
+float output14 = output15 + output24;
+float output13 = clamp(output14, 0.0, 1.0);
+float output12 = u_UseArcMask == u_TRUE ? output13 : u_ONE;
+float output34 = u_StripeCountint * u_TWO;
+float output33 = u_PI * output34;
+float output32 = output16 * output33;
+float output31 = sin(output32);
+float output30 = u_HALF * output31;
+float output29 = output30 + u_HALF;
+float output35 = 1. - u_StripeWidth;
+float output38 = u_StripeFeather / u_FIFTY;
+float output37 = output38 * u_StripeCountint;
+float output36 = output37 + output35;
+float output28 = smoothstep(output35, output36, output29);
+float output27 = clamp(output28, 0.0, 1.0);
+float output26 = u_UseStripes == u_TRUE ? output27 : u_ONE;
+float output11 = output12 * output26;
+vec2 xy2 = vec2(output20, output22).xy;
+float output44 = length(xy2);
+float output46 = u_HALF * u_RingThickness;
+float output45 = output46 + u_RingRadius;
+float output47 = u_RingRadius - output46;
+float output43 = 0.0 + (output44 - output45) * (1.0 - 0.0) / (output47 - output45);
+float output48 = 0.0 + (output44 - output47) * (1.0 - 0.0) / (output45 - output47);
+float output42 = u_Reverse == u_TRUE ? output43 : output48;
+float output53 = -1.0 * u_RingThickness;
+float output52 = output53 + u_RingRadius;
+float output55 = -1.0 * u_RingFeather;
+float output54 = output52 + output55;
+float output51 = smoothstep(output52, output54, output44);
+float output57 = u_RingThickness + u_RingRadius;
+float output58 = output57 + u_RingFeather;
+float output56 = smoothstep(output57, output58, output44);
+float output50 = output51 + output56;
+float output49 = 1. - output50;
+float output41 = output42 * output49;
+float output40 = clamp(output41, 0.0, 1.0);
+float output59 = clamp(output49, 0.0, 1.0);
+float output39 = u_UseRingRamp == u_TRUE ? output40 : output59;
+float output10 = output11 * output39;
+vec3 output9 = u_ColorBase * output10;
+vec3 output3 = output4 + output9;
+vec3 output2 = u_UseRampColor == u_TRUE ? output3 : output9;
+float output65 = 1. - y;
+float output64 = 0.0 + (output65 - u_AlphaRampMin) * (1.0 - 0.0) / (1.0 - u_AlphaRampMin);
+float output63 = output64 * u_AlphaRampStrength;
+float output62 = clamp(output63, 0.0, 1.0);
+float output66 = output10 * u_AlphaGlobal;
+float output61 = output62 * output66;
+float output60 = u_UseRampAlpha == u_TRUE ? output61 : output66;
+gl_FragColor = vec4(output2, output60);
+#ifdef CONVERTTOLINEAR0
+gl_FragColor = toLinearSpace(gl_FragColor);
+#endif
+#ifdef CONVERTTOGAMMA0
+gl_FragColor = toGammaSpace(gl_FragColor);
+#endif
+#if defined(PREPASS)
+gl_FragData[0] = gl_FragColor;
+#endif
+
+}
